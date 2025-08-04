@@ -1,0 +1,21 @@
+{
+  "default_difficulty": 4,
+  "max_thinking_time": 10.0,
+  "enable_opening_book": true,
+  "show_thinking_info": true,
+  "auto_save_games": true,
+  "piece_theme": "default",
+  "board_theme": "brown",
+  "engine_settings": {
+    "use_transposition_table": true,
+    "aspiration_windows": false,
+    "iterative_deepening": true,
+    "move_ordering": true
+  },
+  "ui_settings": {
+    "show_coordinates": true,
+    "highlight_last_move": true,
+    "show_legal_moves": false,
+    "animation_speed": "normal"
+  }
+}
