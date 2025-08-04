@@ -67,7 +67,7 @@ def render_board():
         coordinates=True,
         lastmove=st.session_state.board.peek() if st.session_state.board.move_stack else None
     )
-
+    
     # Display the board
     st.markdown(
         f'<div class="chess-board">{board_svg}</div>',
@@ -100,7 +100,7 @@ def bot_move():
                 depth=st.session_state.difficulty
             )
             thinking_time = time.time() - start_time
-
+            
             if best_move:
                 st.session_state.board.push(best_move)
                 st.session_state.game_history.append({
@@ -115,15 +115,15 @@ def bot_move():
 
 def main():
     initialize_session_state()
-
+    
     # Header
     st.title("♟️ Intelligent Chess Bot")
     st.markdown("Play against an AI opponent powered by minimax algorithm with alpha-beta pruning!")
-
+    
     # Sidebar controls
     with st.sidebar:
         st.header("🎮 Game Controls")
-
+        
         # Difficulty selection
         difficulty_map = {
             "Beginner (Depth 3)": 3,
@@ -131,14 +131,14 @@ def main():
             "Advanced (Depth 5)": 5,
             "Expert (Depth 6)": 6
         }
-
+        
         difficulty_choice = st.selectbox(
             "Select Difficulty",
             options=list(difficulty_map.keys()),
             index=1
         )
         st.session_state.difficulty = difficulty_map[difficulty_choice]
-
+        
         # Game controls
         col1, col2 = st.columns(2)
         with col1:
@@ -146,7 +146,7 @@ def main():
                 st.session_state.board = chess.Board()
                 st.session_state.game_history = []
                 st.rerun()
-
+        
         with col2:
             if st.button("↩️ Undo Move") and st.session_state.board.move_stack:
                 # Undo last two moves (player and bot)
@@ -155,11 +155,11 @@ def main():
                     st.session_state.board.pop()
                     st.session_state.game_history = st.session_state.game_history[:-2]
                 st.rerun()
-
+        
         # Player color selection
         st.markdown("---")
         player_color = st.radio("Play as:", ["White", "Black"], index=0)
-
+        
         # Game statistics
         st.markdown("---")
         st.subheader("📊 Statistics")
@@ -172,47 +172,49 @@ def main():
             st.metric("Losses", stats['losses'])
         with col3:
             st.metric("Draws", stats['draws'])
-
+    
     # Main game area
     col1, col2 = st.columns([2, 1])
-
+    
     with col1:
         # Render the chess board
         render_board()
-
+        
         # Move input
         if not st.session_state.board.is_game_over():
             current_turn = "White" if st.session_state.board.turn else "Black"
-            player_turn = (player_color == "White" and st.session_state.board.turn) or \
-                         (player_color == "Black" and not st.session_state.board.turn)
-
+            player_turn = (
+                (player_color == "White" and st.session_state.board.turn) or
+                (player_color == "Black" and not st.session_state.board.turn)
+            )
+            
             if player_turn:
                 st.subheader(f"Your turn ({current_turn})")
-
+                
                 # Move input methods
                 move_input_method = st.radio("Input method:", ["UCI Notation", "Dropdown"], horizontal=True)
-
+                
                 if move_input_method == "UCI Notation":
                     move_input = st.text_input(
                         "Enter your move (e.g., e2e4):",
                         placeholder="Enter UCI notation",
                         key="move_input"
                     )
-
+                    
                     if st.button("Make Move") and move_input:
                         if make_move(move_input):
                             st.success(f"Move {move_input} played!")
                             st.rerun()
                         else:
                             st.error("Invalid move! Please try again.")
-
+                
                 else:
                     # Dropdown move selection
                     legal_moves = list(st.session_state.board.legal_moves)
                     if legal_moves:
                         move_options = [move.uci() for move in legal_moves]
                         selected_move = st.selectbox("Select a move:", move_options)
-
+                        
                         if st.button("Make Selected Move"):
                             if make_move(selected_move):
                                 st.success(f"Move {selected_move} played!")
@@ -224,7 +226,7 @@ def main():
                     if best_move:
                         st.success(f"Bot played: {best_move.uci()} (Thinking time: {thinking_time:.2f}s)")
                         st.rerun()
-
+        
         # Game status
         if st.session_state.board.is_game_over():
             result = st.session_state.board.result()
@@ -234,12 +236,12 @@ def main():
                 st.success("🎉 Black wins!")
             else:
                 st.info("🤝 Game ended in a draw!")
-
+    
     with col2:
         # Position evaluation
         st.subheader("📈 Position Analysis")
         eval_score = st.session_state.evaluator.evaluate_position(st.session_state.board)
-
+        
         # Display evaluation
         if eval_score > 0:
             st.metric("Position Evaluation", f"+{eval_score:.2f}", "White advantage")
@@ -247,7 +249,7 @@ def main():
             st.metric("Position Evaluation", f"{eval_score:.2f}", "Black advantage")
         else:
             st.metric("Position Evaluation", "0.00", "Equal position")
-
+        
         # Move history
         st.subheader("📝 Move History")
         if st.session_state.game_history:
@@ -258,23 +260,23 @@ def main():
                     history_text += f"{move_num}. {move_data['san']} "
                 else:
                     history_text += f"{move_data['san']}\n"
-
+                    
                 if move_data.get('is_bot'):
                     history_text += f"(Bot: {move_data.get('thinking_time', 0):.1f}s) "
-
+            
             st.markdown(f'<div class="move-history">{history_text}</div>', unsafe_allow_html=True)
         else:
             st.write("No moves yet")
-
+        
         # Current position info
         st.subheader("ℹ️ Position Info")
         st.write(f"**Turn:** {'White' if st.session_state.board.turn else 'Black'}")
         st.write(f"**Move Number:** {st.session_state.board.fullmove_number}")
         st.write(f"**Halfmove Clock:** {st.session_state.board.halfmove_clock}")
-
+        
         if st.session_state.board.is_check():
             st.warning("⚠️ King in check!")
-
+        
         # FEN notation
         st.subheader("🔤 FEN Notation")
         st.code(st.session_state.board.fen())
