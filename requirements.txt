@@ -1,5 +1,5 @@
 streamlit>=1.28.0
-python-chess>=1.999
+pandas>=2.0.0,<3.0.0
 numpy>=1.24.0
 pandas>=2.0.0
 stockfish>=3.28.0
